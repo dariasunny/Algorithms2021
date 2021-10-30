@@ -44,19 +44,19 @@ def D_copy(a,b,c,d, func, y):
   return [summa,summa, summa, summa]
 
 #algorithm Nelder-Mead
-res_rational = scipy.optimize.minimize(lambda a : D(a[0],a[1], a[2], a[3], rational, y_val), [0,0,0,0], method = 'Nelder-Mead', options={'fatol': 0.01})
+res_rational = scipy.optimize.minimize(lambda a : D(a[0],a[1], a[2], a[3], rational, y_val), [-2,1,1,-2], method = 'Nelder-Mead', options={'fatol': 0.01})
 res_rational
 
 #algorithm LM
-lm_func = scipy.optimize.root(lambda a : D_copy(a[0],a[1], a[2], a[3], rational, y_val), [0,0,0,0], method = 'lm', options={'fatol': 0.01})
+lm_func = scipy.optimize.root(lambda a : D_copy(a[0],a[1], a[2], a[3], rational, y_val), [-2,1,1,-2], method = 'lm', options={'ftol': 0.001})
 lm_func
 
 #algorithm Differential Evolution
-de_func = scipy.optimize.differential_evolution(lambda a : D(a[0],a[1], a[2], a[3], rational, y_val), [(0,1),(0,1),(0,1),(0,1)], strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7)
+de_func = scipy.optimize.differential_evolution(lambda a : D(a[0],a[1], a[2], a[3], rational, y_val), [(-3,3),(-3,3),(-3,3),(-3,3)], strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7)
 de_func
 
 #algorithm Annealing
-sa_func = scipy.optimize.dual_annealing(lambda a : D(a[0],a[1], a[2], a[3], rational, y_val), [(0,1),(0,1),(0,1),(0,1)])
+sa_func = scipy.optimize.dual_annealing(lambda a : D(a[0],a[1], a[2], a[3], rational, y_val), [(-3,3),(-3,3),(-3,3),(-3,3)])
 sa_func
 
 #paramerets

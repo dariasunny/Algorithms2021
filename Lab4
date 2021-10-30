@@ -232,4 +232,3 @@ plt.show()
 #compare lenght
 print('non-optimal Length '+ ' ' + str(length))
 print('optimal Length '+ ' ' + str(optimalLength))
-

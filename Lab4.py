@@ -85,150 +85,193 @@ plt.rcParams["figure.figsize"]=(10,10)
 plt.legend()
 
 #Number 2
+# Modules
+import math
+import numpy as np
+import matplotlib.pyplot as plt
 
-pip install utils
+# calulate length between two points
 
-import utils
-
-# read the data 
-citys=pd.read_table('/content/wg22_xy.txt',header=None)
-citys.columns=['x']
-citys['y']=None
-citys.drop(citys.head(2).index, inplace=True)
-
-# some needed manipulation with data 
-for i in range(2,len(citys)):
-    coordinate=citys['x'][i].split()
-    citys['x'][i]=float(coordinate[0])
-    citys['y'][i]=float(coordinate[1])
-    
-citys=citys.drop([22])
-citys=citys.drop([23])
-
-start=list(citys.iloc[0])
-end=list(citys.iloc[0])
-citys.index=[i for i in range(len(citys))]
-
-#matrix of distances
-matrix = pd.DataFrame(distance_matrix(citys.values, citys.values), index=citys.index, columns=citys.index)
-
-citys_copy_new = citys.append({'x' : end[0],
-                    'y' : end[1]},ignore_index=True)
-                    
-
-citys=citys.drop([0])
-paths=[i+1 for i in range(len(citys))] # initiate path
-def CalDistance(x,y):
-    return math.sqrt(x**2+y**2)
-    
-#here we calculate our lenght of paths
-def CalLength(matrix, paths):
-    length=0
-    n=1 
-    for i in range(len(paths)):
-        if i==0:
-            length+=matrix[0][paths[i]]
-            n+=1
-        elif n<len(paths):
-            length+=matrix[paths[i]][paths[i+1]]
-            n+=1
-        else:
-            length+=matrix[0][paths[i]]
-    return length
+def length (n1,n2):
+	return math.sqrt((n1[0]-n2[0])**2 + (n1[1]-n2[1])**2)
 
 
-distance1=0
-distance2=0
-dif=0
-for i in range(len(citys)):  
-    #np.random.shuffle(path)
-    newPaths1= list(np.random.permutation(paths))
-    newPaths2=list(np.random.permutation(paths))
-    distance1= CalLength(matrix, newPaths1)
-    #distance2= CalLength(citys,newPaths2,start,end)
-    distance2= CalLength(matrix, newPaths2)
-    difNew=abs(distance1-distance2)
-    if difNew>=dif:
-        dif=difNew
-#out algorithm
-Pr=0.5 #initiate accept possibility
-T0=dif/Pr#initiate terperature
+# calculate total length to traverse all points
 
-T=T0
-Tmin=T/50
-k=10*len(paths) #times of internal circulation 
-length=0#initiate distance according to the initiate path
-#length= CalLength(citys,paths,start,end)
-length= CalLength(matrix,paths)
-print(length)
-t=0 #time 
+def total_length(arr,n):
+	l=length(arr[0],arr[n-1])
+	for i in range(n-1):
+		l+= length(arr[i],arr[i+1])
+	return l
+		
 
-initialPath=list(np.random.permutation(paths))
-#length=CalLength(citys,initialPath,start,end)
-length= CalLength(matrix,paths)
-optimalPath = initialPath.copy()
-optimalLength=length
-t=0
-while T>Tmin:
-    for i in range(k):
-        newPaths=optimalPath.copy()
-        for j in range(int(T0/50)):
-            a=0
-            b=0
-            while a==b:
-                a=np.random.randint(0,len(paths))
-                b=np.random.randint(0,len(paths))
-            te=newPaths[a]
-            newPaths[a]=newPaths[b]
-            newPaths[b]=te
-        #newLength=CalLength(citys,newPaths,start,end)
-        newLength=CalLength(matrix,newPaths)
-        if newLength<optimalLength:
-            optimalLength=newLength
-            optimalPath=newPaths
-        else:
-             #metropolis principle
-             p=math.exp(-(newLength-optimalLength)/T)
-             r=np.random.uniform(low=0,high=1)
-             if r<p:
-                 optimalLength=newLength
-                 optimalPath=newPaths
+	
+	
+# two_opt optimization for simulated annealing, using a random probabilty function to do selection
 
-    back=np.random.uniform(low=0,high=1)
-    if back>=0.85:
-        T=T*2
-        continue
-    t+=1
-    print (t)
-    T=T0/(1+t)
-print (optimalLength)
+def two_opt_optimization(sol_arr,t,n):
+	
+	# picking two pair of consecutive integers, making sure they are not same
+	ai =np.random.randint(0,n-1)
+	bi =(ai+1)%n 
+	ci =np.random.randint(0,n-1)
+	di =(ci+1)%n
+	
+	if ai != ci and bi != ci:
+		a =sol_arr[ai]
+		b =sol_arr[bi]
+		c =sol_arr[ci]
+		d =sol_arr[di]
+		
+		# old lengths
+		ab =length(a,b)
+		cd =length(c,d)
+		# new lengths, if accepted by our probability function
+		ac =length(a,c)
+		bd =length(b,d)
+		
+		diff = ( ab + cd ) - ( ac + bd )
+		
+		p = 0
+		# for negative diff-> we'll use boltzman probabilty distribution equation-> P(E)=exp(-E/kT)
+		if diff < 0:
+			# k is considered to be 1
+			p = math.exp( diff/t )
+			
+		# we'll sometimes skip the good solution
+		elif diff > 0.05 :
+			p = 1
+			
+		#print p	
+		if(np.random.random() < p ):
+			
+			new_arr = list(range(0,n))
+			new_arr[0]=sol_arr[ai]
+			i = 1
+			
+			while bi!= ci:
+				
+				new_arr[i]=sol_arr[ci]
+				i = i+1
+				ci = (ci-1)%n
+				
+			new_arr[i]=sol_arr[bi]
+			i = i+1
+			
+			while ai!= di:
+				new_arr[i] =sol_arr[di]
+				i = i+1
+				di =(di+1)%n
+				
+				
+			# animate this frame	
+			#animate()
+			
+			return new_arr
+			
+	return sol_arr
+				
+				
+# Simmulated Annealing algorithm----------------------------------------------	
+	
+def sa_algorithm (input_data):
+	
+	#length of input_data
+	n=len(input_data)
+	
+	#creating a base solution
+	sol_arr=input_data
+	print("Initial order")
+	print(sol_arr)
+	
+	#plot initial solution
+	#plt.axis([-100,1100,-100,1100])
+	#plt.plot(input_data[:,0],input_data[:,1],'ro')
+	
+	#initial temperature
+	t = 100
+	
+	#current length
+	min_l=total_length(sol_arr,n)
+	
+	i=0
+	best_arr=[]
+	
+	while t>0.1:
+		
+		i= i+1
+		
+		#two_opt method- for optimization
+		sol_arr=two_opt_optimization(sol_arr,t,n)
+		
+		#after 200 steps restart the process until the temperature is less than 0.1
+		if i>=200 :
+				
+			i=0
+			current_l=total_length(sol_arr,n)
+			
+			#because input size is approx. 200 i'm keeping the cooling schedule slow
+			t = t*0.9995
+			#print t
+			
+			if current_l < min_l:
+				print(current_l)
+				min_l=current_l
+				best_arr=sol_arr[:]
+	
+	return best_arr
+				
+			 
 
-initialPath = [0] + initialPath  +[20]
-optimalPath = [0] + optimalPath + [20]
 
-#plot initial situation
-citys_copy_new['order']=initialPath
-citys_order=citys_copy_new.sort_values(by=['order'])
-plt.plot(citys_order['x'],citys_order['y'],  marker='o', linestyle='dashed')
-plt.plot(citys_order['x'][0],citys_order['y'][0], 'ro')
-plt.text(citys_order['x'][0],citys_order['y'][0],'First')
+#global variables
+input_data = []
+
+
+
+
+s="new.txt"
+n=0
+
+if s=="1":
+	# creating random inputs
+	print("enter the amount of inputs (preferrably close to 200)")
+	n=input()
+	input_data=np.random.randint(1000,size=(n,2))
+	
+else:
+	print("Input should be in the format as described in the Readme section")
+	
+	#fetching file from user's database
+	with open(s) as f:
+		for line in f:
+			numbers_str = line.split('.')
+			x=int(numbers_str[0])
+			y=int(numbers_str[1])
+			input_data.append((x,y))
+			
+		
+final_arr = sa_algorithm(input_data)
+final_l = total_length(final_arr,n)
+
+origin = initial_order[0]
+initial_order = [(-57, 28), (54, -65), (46, 79), (8, 111), (-36, 52), (-22, -76), (34, 129), (74, 6), (-6, -41), (21, 45), (37, 155), (-38, 35), (-5, -24), (70, -74), (59, -26), (114, -56), (83, -41), (-40, -28), (21, -12), (0, 71)]
+initial_order.append(origin)
+
+plt.plot([x[0] for x in initial_order],[y[1] for y in initial_order],  marker='o', linestyle='dashed')
+plt.plot(initial_order[0][0],initial_order[0][1], 'ro')
+plt.text(initial_order[0][0],initial_order[0][1], 'First')
 plt.title('Initial situation')
 plt.xlabel('x', color='gray')
 plt.ylabel('y',color='gray')
 plt.show()
 
-#plot optimal situation
-citys_copy_new['order']=optimalPath
-citys_order=citys_copy_new.sort_values(by=['order'])
-
-plt.plot(citys_order['x'],citys_order['y'],  marker='o', linestyle='dashed')
-plt.plot(citys_order['x'][0],citys_order['y'][0], 'ro')
-plt.text(citys_order['x'][0],citys_order['y'][0],'First')
-plt.title('Optimal situation')
+citys_order=final_arr
+final_arr = final_arr[final_arr.index(origin):] + final_arr[:final_arr.index(origin)+1]
+plt.plot([x[0] for x in final_arr],[y[1] for y in final_arr],  marker='o', linestyle='dashed')
+plt.plot(final_arr[0][0],final_arr[0][1], 'ro')
+plt.text(final_arr[0][0],final_arr[0][1], 'First')
+plt.title('Final situation')
 plt.xlabel('x', color='gray')
 plt.ylabel('y',color='gray')
 plt.show()
-
-#compare lenght
-print('non-optimal Length '+ ' ' + str(length))
-print('optimal Length '+ ' ' + str(optimalLength))

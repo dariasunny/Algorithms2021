@@ -230,25 +230,15 @@ input_data = []
 
 
 
-s="new.txt"
+s="new.txt" #File new.txt contains city data
 n=0
-
-if s=="1":
-	# creating random inputs
-	print("enter the amount of inputs (preferrably close to 200)")
-	n=input()
-	input_data=np.random.randint(1000,size=(n,2))
 	
-else:
-	print("Input should be in the format as described in the Readme section")
-	
-	#fetching file from user's database
-	with open(s) as f:
-		for line in f:
-			numbers_str = line.split('.')
-			x=int(numbers_str[0])
-			y=int(numbers_str[1])
-			input_data.append((x,y))
+with open(s) as f:
+	for line in f:
+		numbers_str = line.split('.')
+		x=int(numbers_str[0])
+		y=int(numbers_str[1])
+		input_data.append((x,y))
 			
 		
 final_arr = sa_algorithm(input_data)

@@ -5,6 +5,8 @@ import scipy as sp
 import pandas as pd
 import scipy.sparse
 from collections import defaultdict
+from pylab import rcParams
+rcParams['figure.figsize'] = 10, 10
 
 adj_matrix = np.zeros((100,100))
 for n in range(200):
@@ -86,21 +88,41 @@ dfs(visited, H, 0)
 #here bf search 
 visited = [] # List to keep track of visited nodes.
 queue = []     #Initialize a queue
-
-def bfs(visited, graph, node):
-  visited.append(node)
-  queue.append(node)
+def bfs(visited, graph, start, end):
+  parent = {start: None}
+  visited.append(start)
+  queue.append(start)
 
   while queue:
     s = queue.pop(0) 
-    print (s, end = " ") 
 
     for neighbour in graph[s]:
       if neighbour not in visited:
+        parent[neighbour] = s
+        if neighbour == end:
+          path = []
+          path.append(end)
+          while parent[neighbour] != None:
+            path.append(parent[neighbour])
+            neighbour = parent[neighbour]
+          return path[::-1]
         visited.append(neighbour)
         queue.append(neighbour)
         
 # Driver Code
-print("Following is the Breadth - First  Search")
+start = np.random.randint(0, 99)
+end = np.random.randint(0, 99)
 
-bfs(visited, H, 0)
+print("start node is {}, end node is {}".format(start, end))
+
+print("shortest path is ", bfs(visited, H, start, end))
+
+#plot it
+color_map = []
+for node in H:
+    if node in [7, 51, 85, 78, 76, 50]:
+        color_map.append('red')
+    else: 
+        color_map.append('grey') 
+
+nx.draw(H, node_color=color_map, with_labels=True)

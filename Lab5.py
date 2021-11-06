@@ -81,6 +81,21 @@ def dfs(visited, graph, node):  #function for dfs
         for neighbour in graph[node]:
             dfs(visited, graph, neighbour)
             
+def components(graph):
+  connected_comp = 0
+  last_comp = set()
+  components = []
+  visited = set()
+  for node in graph.nodes:
+    if node not in visited:
+      dfs(last_comp, graph, node)
+      components.append(set(last_comp))
+      visited = visited.union(last_comp)
+      last_comp = set()
+      connected_comp += 1
+  return connected_comp, components
+
+components(H)[0]          
 # Driver Code
 
 print("Following is the Depth-First Search")

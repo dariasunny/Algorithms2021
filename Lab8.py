@@ -161,12 +161,6 @@ plt.title("Minimal spanning tree")
 #number 2
 
 def bfs(graph, source, sink):
-    """ Find shortest path between source and sink if path exists.
-    :param graph:
-    :param source:
-    :param sink:
-    :return:
-    """
     queue, visited = [(source, [source])], [source]
     while queue:
         u, path = queue.pop(0)
@@ -183,14 +177,6 @@ def bfs(graph, source, sink):
                 queue.append((v, path + [v]))
                 
 def augment_flow(graph, flow_path):
-    """ Augment flow of the graph
-    :param graph:
-    :param flow_path: (list) eg [('source', 'CA'), ('CA', 'AZ'), ('AZ', 'sink')]
-    :return:
-        1. get the bottleneck capacity
-        2. update the residual capacities of forward and back edges
-        3. return graph with flow augmented.
-    """
     bottleneck = min([graph[u][v]['weight'] for u, v in flow_path])
     for u, v in flow_path:
         updated_capacity = graph[u][v]['weight'] - bottleneck
@@ -207,14 +193,6 @@ def augment_flow(graph, flow_path):
     return graph
   
 def ford_fulkerson(graph, source, sink):
-    """ Run the Ford Fulkerson method using BFS for shortest path
-    :param graph:
-    :param source:
-    :param sink:
-    :return:
-        Once BFS can no longer find any shortest direct path between source and sink,
-        return the residual graph with the updated capacities.
-    """
     path = bfs(graph, source, sink)
     while path:
         #print(path)
@@ -225,12 +203,6 @@ def ford_fulkerson(graph, source, sink):
     return graph, sys.getsizeof([node for node in graph.nodes]) + sys.getsizeof([node for node in graph.edges]) 
   
 def calc_flow(G_f, G):
-    """ Calculate the flow for each node inside of G (original graph)
-    :param G_f: the residual graph Gf, after all flow has been maxed
-    :param G: the original graph.
-    :return:
-        Use the original graph and the augmented graph to calculate flow for each node.
-    """
     flow = {i: {} for i in G}
     for u, v in G.edges:
         if G_f.has_edge(u, v):

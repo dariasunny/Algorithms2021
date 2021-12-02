@@ -136,8 +136,8 @@ def rational(x, a, b):
 def brute_forse_two(func, eps):
   #x, y = 0, 0
   #smallest_x, smallest_y = 0, 0
-  x, y = 0, 0
-  smallest_x, smallest_y = 0, 0
+  x, y = -1+eps, -1+eps
+  smallest_x, smallest_y = -1+eps, -1+eps
   min_func_value = func(x, y)
   count_f = 1
   while y <= 1:
@@ -149,15 +149,17 @@ def brute_forse_two(func, eps):
         smallest_x = x
         smallest_y = y
         min_func_value = func_n
-    x = 0 #0
+    x = -1+eps #0
     y += eps
   return smallest_x, smallest_y, count_f
  
  
 # realize Gauss for 2 - dim data
 def gauss(func, eps):
-  a,b = 0,1
-  x_prev, y_prev = (b-a)/2, (b-a)/2
+  a,b = -1,1
+  #x_start, y_start = (b-a)/2, (b-a)/2
+  x_start, y_start = random.random(), random.random()
+  x_prev, y_prev = x_start, y_start
   fun_calls_x, fun_calls_y = 0, 0 
   count_f = 0
   x_curr, fun_calls_x = dihotomia_for_gauss(lambda x: func(x,y_prev), a, b, eps)
@@ -174,16 +176,16 @@ def gauss(func, eps):
   
 #realize NM method
 res_lin = scipy.optimize.minimize(lambda a : D(a[0],a[1],linear, y_val), [0,0], method = 'Nelder-Mead', bounds= [[0,1], [0,1]], options={'xatol': 0.001})
-res_rational = scipy.optimize.minimize(lambda a : D(a[0],a[1],rational, y_val), [0,0], method = 'Nelder-Mead', bounds= [[0,1], [0,1]], options={'xatol': 0.001})
+res_rational = scipy.optimize.minimize(lambda a : D(a[0],a[1],rational, y_val), [0,0], method = 'Nelder-Mead', bounds= [[0,1], [0,1]], options={'fatol': 0.001})
 
 #estimated linear parameters
 a_plot_brute_lin, b_plot_brute_lin, counter_lin_br = brute_forse_two(lambda a,b: D(a,b,linear, y_val),0.001)
-a_plot_gauss_lin, b_plot_gauss_lin, counter_gauss_br  = gauss(lambda a,b: D(a,b,linear, y_val),0.1)
+a_plot_gauss_lin, b_plot_gauss_lin, counter_gauss_br  = gauss(lambda a,b: D(a,b,linear, y_val),0.001)
 a_plot_nm_lin, b_plot_nm_lin = res_lin.x[0], res_lin.x[1]
 
 #estimated rational parameters
 a_plot_brute_rational, b_plot_brute_rational, counter_rat_br  = brute_forse_two(lambda a,b: D(a,b,rational, y_val),0.001)
-a_plot_gauss_rational, b_plot_gauss_rational, counter_rat_gauss = gauss(lambda a,b: D(a,b,rational, y_val),0.1)
+a_plot_gauss_rational, b_plot_gauss_rational, counter_rat_gauss = gauss(lambda a,b: D(a,b,rational, y_val),0.001)
 a_plot_nm_rational, b_plot_nm_rational = res_rational.x[0], res_rational.x[1]
 
 #plot all methods for linear app
@@ -194,38 +196,6 @@ plt.plot(x_val, real_val, label='generating function', color = 'black')
 plt.plot(x_val, [linear(x, a_plot_brute_lin, b_plot_brute_lin) for x in x_val], label='brute forse')
 plt.plot(x_val, [linear(x, a_plot_gauss_lin, b_plot_gauss_lin) for x in x_val], label='Gauss')
 plt.plot(x_val, [linear(x, a_plot_nm_lin, b_plot_nm_lin) for x in x_val], label='Nelder-Mead')
-# naming the x axis
-plt.xlabel('')
-# naming the y axis
-plt.ylabel('')
-plt.title('Linear approximation, all methods')
-plt.legend()
-plt.show()
-
-#plot one search for linear app
-n_range = list(range(0,101,1))
-x_val = [k/100 for k in n_range]
-plt.scatter(x_val, y_val, label='data')
-plt.plot(x_val, real_val, label='generating function', color = 'black')
-plt.plot(x_val, [linear(x, a_plot_brute_lin, b_plot_brute_lin) for x in x_val], label='brute forse')
-#plt.plot(x_val, [linear(x, a_plot_gauss_lin, b_plot_gauss_lin) for x in x_val], label='Gauss')
-#plt.plot(x_val, [linear(x, a_plot_nm_lin, b_plot_nm_lin) for x in x_val], label='Nelder-Mead')
-# naming the x axis
-plt.xlabel('')
-# naming the y axis
-plt.ylabel('')
-plt.title('Linear approximation, Exhaustive search')
-plt.legend()
-plt.show()
-
-#plot 2 for linear 
-n_range = list(range(0,101,1))
-x_val = [k/100 for k in n_range]
-plt.scatter(x_val, y_val, label='data')
-plt.plot(x_val, real_val, label='generating function', color = 'black')
-plt.plot(x_val, [linear(x, a_plot_brute_lin, b_plot_brute_lin) for x in x_val], label='brute forse')
-plt.plot(x_val, [linear(x, a_plot_gauss_lin, b_plot_gauss_lin) for x in x_val], label='Gauss')
-#plt.plot(x_val, [linear(x, a_plot_nm_lin, b_plot_nm_lin) for x in x_val], label='Nelder-Mead')
 # naming the x axis
 plt.xlabel('')
 # naming the y axis
@@ -250,34 +220,4 @@ plt.title('Rational approximation, all methods')
 plt.legend()
 plt.show()
 
-#plot brite force for rational 
-n_range = list(range(0,101,1))
-x_val = [k/100 for k in n_range]
-plt.scatter(x_val, y_val, label='data')
-plt.plot(x_val, [rational(x, a_plot_brute_rational, b_plot_brute_rational) for x in x_val], label='brute forse')
-plt.plot(x_val, real_val, label='generating function', color = 'black')
-#plt.plot(x_val, [rational(x, a_plot_gauss_rational, b_plot_gauss_rational) for x in x_val], label='Gauss')
-#plt.plot(x_val, [rational(x, a_plot_nm_rational, b_plot_nm_rational) for x in x_val], label='Nelder-Mead')
-# naming the x axis
-plt.xlabel('')
-# naming the y axis
-plt.ylabel('')
-plt.title('Rational approximation, Exhaustive search')
-plt.legend()
-plt.show()
 
-#plot 2 for rational 
-n_range = list(range(0,101,1))
-x_val = [k/100 for k in n_range]
-plt.scatter(x_val, y_val, label='data')
-plt.plot(x_val, [rational(x, a_plot_brute_rational, b_plot_brute_rational) for x in x_val], label='brute forse')
-plt.plot(x_val, real_val, label='generating function', color = 'black')
-plt.plot(x_val, [rational(x, a_plot_gauss_rational, b_plot_gauss_rational) for x in x_val], label='Gauss')
-#plt.plot(x_val, [rational(x, a_plot_nm_rational, b_plot_nm_rational) for x in x_val], label='Nelder-Mead')
-# naming the x axis
-plt.xlabel('')
-# naming the y axis
-plt.ylabel('')
-plt.title('Rational approximation, Exhaustive search and Gauss methods')
-plt.legend()
-plt.show()
